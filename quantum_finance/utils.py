@@ -28,3 +28,6 @@ def fetch_log_returns(start,end):
     log_return = np.log(price_data_frame/price_data_frame.shift(1))
     log_return.columns = [c[0] for c in log_return.columns]
     return log_return.dropna()
+
+def string_to_int_list(s):
+    return [int(char) for char in s]
