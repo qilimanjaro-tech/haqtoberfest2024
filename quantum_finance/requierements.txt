@@ -1,1 +1,4 @@
 qibo==0.2.8
+yfinance
+pandas
+sympy
