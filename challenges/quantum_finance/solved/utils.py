@@ -3,7 +3,7 @@ import pandas as pd
 import yfinance
 
 
-def fetch_log_returns(start,end):
+def fetch_log_returns(start: str,end: str) -> pd.DataFrame:
     raw_data = yfinance.download(tickers = '^GSPC ^FTSE ^N225 ^GDAXI ^IBEX', 
                                 start=start, end=end, interval = '1d', group_by = 'ticker',
                                 auto_adjust = True)
@@ -29,5 +29,5 @@ def fetch_log_returns(start,end):
     log_return.columns = [c[0] for c in log_return.columns]
     return log_return.dropna()
 
-def string_to_int_list(s):
+def string_to_int_list(s: str) -> list[int]:
     return [int(char) for char in s]
