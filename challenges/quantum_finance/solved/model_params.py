@@ -1,6 +1,6 @@
 from qibo.gates import CNOT, CZ
 
-K = 1 # number of qubits assigned per asset 
+K = 2 # number of qubits assigned per asset 
 
 NUM_ASSETS = 5# number of assets
 N = NUM_ASSETS*K # number of total qubits
