@@ -43,30 +43,35 @@ def normalization_cost_function(bit_string: list[int]) -> float:
     h3 -= -1
     return h3 ** 2
 
-def compute_return_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS): 
+def compute_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
+    
+    cost_function = LAMBDA_1 * return_cost_function(dataset, bit_string) + LAMBDA_2 * risk_cost_function(dataset, bit_string) + LAMBDA_3 * normalization_cost_function(bit_string)
+    
+    return cost_function
+def compute_return_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS) -> float: 
     return_energy = 0
     for bit_string, stat_freq in result.frequencies().items():
         return_energy += (stat_freq / nshots) * return_cost_function(dataset,string_to_int_list(bit_string))
     return return_energy
 
-def compute_risk_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS): 
+def compute_risk_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS) -> float: 
     risk_energy = 0
     for bit_string, stat_freq in result.frequencies().items():
         risk_energy += (stat_freq / nshots) * risk_cost_function(dataset,string_to_int_list(bit_string))
     return risk_energy
 
-def compute_normalization_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS): 
+def compute_normalization_energy(result: qibo.result.CircuitResult, nshots: int = NSHOTS) -> float: 
     norm_energy = 0
     for bit_string, stat_freq in result.frequencies().items():
-        risk_energy += (stat_freq / nshots) * normalization_cost_function(string_to_int_list(bit_string))
+        norm_energy += (stat_freq / nshots) * normalization_cost_function(string_to_int_list(bit_string))
     return norm_energy
     
-def compute_total_energy(parameters: list[float], dataset: pd.DataFrame, nshots = NSHOTS, num_qubits = N):
+def compute_total_energy(parameters: list[float], dataset: pd.DataFrame, nshots = NSHOTS, num_qubits = N) -> float:
     
     circuit = build_hardware_efficient_ansatz(num_qubits,parameters)
     
     # Measure the qubits quantum state
     result = circuit(nshots=nshots) 
-    total_energy = LAMBDA_1 * compute_return_energy(result,dataset) + LAMBDA_2 * compute_risk_energy(result,dataset)
+    total_energy = LAMBDA_1 * compute_return_energy(result,dataset) + LAMBDA_2 * compute_risk_energy(result,dataset) + LAMBDA_3 * compute_normalization_energy(result)
     
     return total_energy
