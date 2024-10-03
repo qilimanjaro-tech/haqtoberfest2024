@@ -9,6 +9,6 @@ Join us at Qilimanjaro on October 5th for a 12-hour hackathon, as part of the Ha
 - [Code of Conduct](https://github.com/qilimanjaro-tech/haqtoberfest2024/blob/main/CODE_OF_CONDUCT.md)
 
 ## Organizers and Supporters
-- This event is organized by [Qilimanjaro Quantum Tech](https://www.qilimanjaro.tech/) and supported by [HPCNow/Do IT Now]([url](https://hpcnow.com/)) and [Python Barcelona]([url](https://pybcn.org/)).
+- This event is organized by [Qilimanjaro Quantum Tech](https://www.qilimanjaro.tech/) and supported by [HPCNow/Do IT Now]([url](https://hpcnow.com/)), [Python Barcelona]([url](https://pybcn.org/)) and [PyLadiesBCN]([url](https://pybcn.org/pyladies_bcn/)).
 
 <img style="margin: 10px" src="https://www.qilimanjaro.tech/wp-content/uploads/2024/09/Copy-of-We-are-attendig-1024x535-1.png.webp" alt="haQtoberfest 2024 logo" />
