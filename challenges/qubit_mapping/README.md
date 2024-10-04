@@ -2,7 +2,7 @@
 
 This folder contains all necessary information about transpilation of qubit mapping in real quantum hardware. 
 
-In the notebooks folder you will find the files that contain the different parts of the challenge. Inside the folder you can find:
+In the notebooks(notebooks) folder you will find the files that contain the different parts of the challenge. Inside the folder you can find:
 
 - [Tutorial](notebooks/Tutorial.ipynb): notebook containing explanations about basic concepts and examples about qubit mapping.
 
