@@ -17,17 +17,17 @@ from model_params import (
 )
 
 
-def fetch_log_returns(start: str,end: str) -> pd.DataFrame:
+def fetch_log_returns(start: str,end: str, tickers: str = '^GSPC ^FTSE ^N225 ^GDAXI ^IBEX') -> pd.DataFrame:
     """Downloads daily price data from Yahoo finance for five different stock indeces. Picks the closing daily price, keeps only bussiness days, fills the blank days with the previous value, computes the log returns and drops NaNs, if any. 
 
     Args:
-        start (str): _description_
-        end (str): _description_
+        start (str): starting data in format YYYY-MM-DD
+        end (str): ending data in format YYYY-MM-DD
 
     Returns:
-        pd.DataFrame: 
+        pd.DataFrame: each column must correspond to the log daily returns of each asset. 
     """
-    raw_data = yfinance.download(tickers = '^GSPC ^FTSE ^N225 ^GDAXI ^IBEX', 
+    raw_data = yfinance.download(tickers = tickers, 
                                 start=start, end=end, interval = '1d', group_by = 'ticker',
                                 auto_adjust = True)
     df_comp = pd.DataFrame(raw_data.copy())
