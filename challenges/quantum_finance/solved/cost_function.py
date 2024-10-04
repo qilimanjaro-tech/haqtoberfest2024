@@ -5,13 +5,32 @@ from ansatz import build_hardware_efficient_ansatz
 from model_params import LAMBDA_1, LAMBDA_2, LAMBDA_3, NLAYERS, NSHOTS, NUM_ASSETS, SIGMA_TARGET, TWO_QUBIT_GATES, K, N
 from utils import string_to_int_list
 
+# All this functions should help you build the cost function of the problem, which is the expected value of the Hamiltonian defined in (7).
 
 def A(i: int, bit_string: list[int]) -> float:
+    """Building block of the hamiltonian. Note that we need to perform the change of variable x = (1-z)/2 where z are the eigenvalues of sigma_z. If we apply this change then this function depends on a bitstring, which is the outcome of quantum measurement. Make sure you undertand this point :)
+
+    Args:
+        i (int): index of the asset to which it applies              
+        bit_string (list[int]): bit string that encodes a portfolio
+
+    Returns:
+        float: 
+    """
     return sum(2 ** (k - 2) * ((1 - bit_string[k + i*K]) / 2) for k in range(K))
 
 # Return term
 
 def return_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
+    """Corresponds to the first term of the expected value of the Hamiltonian in (7).
+
+    Args:
+        dataset (pd.DataFrame): _description_
+        bit_string (list[int]): _description_
+
+    Returns:
+        float: _description_
+    """
     h1 = 0
     for i, asset in enumerate(dataset.columns):
         h1 += A(i,bit_string) * dataset[asset].values
@@ -21,6 +40,16 @@ def return_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
 # Volatility term
 
 def tilde_sigma(i: int,j: int, dataset: pd.DataFrame) -> float:
+    """Utility function for building the risk term of the hamiltonian. You can use pd.DataFrame.cov() to calculate the covariance matrix
+
+    Args:
+        i (int): rows
+        j (int): columns
+        dataset (pd.DataFrame): daily log returns
+
+    Returns:
+        float: 
+    """
     if i==j: 
         return dataset.cov().values[i][j]
     elif i<j:
@@ -29,6 +58,15 @@ def tilde_sigma(i: int,j: int, dataset: pd.DataFrame) -> float:
         return 0
 
 def risk_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
+    """Corresponds to the second term of the expected value of the Hamiltonian in (7).
+
+    Args:
+        dataset (pd.DataFrame): _description_
+        bit_string (list[int]): _description_
+
+    Returns:
+        float: _description_
+    """
     h2 = 0
     for i in range(NUM_ASSETS):
         for j in range(NUM_ASSETS):  
@@ -37,17 +75,40 @@ def risk_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
     return h2 ** 2
 
 def normalization_cost_function(bit_string: list[int]) -> float:
+    """Corresponds to the third term of the expected value of the Hamiltonian in (7).
+
+    Args:
+        dataset (pd.DataFrame): _description_
+        bit_string (list[int]): _description_
+
+    Returns:
+        float: _description_
+    """
     h3 = 0
     for i in range(NUM_ASSETS): 
         h3 += A(i, bit_string)
     h3 -= -1
     return h3 ** 2
 
+
 def compute_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
-    
+    """Aggregates all the terms of the cost function.
+
+    Args:
+        dataset (pd.DataFrame): _description_
+        bit_string (list[int]): _description_
+
+    Returns:
+        float: _description_
+    """
     cost_function = LAMBDA_1 * return_cost_function(dataset, bit_string) + LAMBDA_2 * risk_cost_function(dataset, bit_string) + LAMBDA_3 * normalization_cost_function(bit_string)
     
     return cost_function
+
+
+### energy
+
+
 def compute_return_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS) -> float: 
     return_energy = 0
     for bit_string, stat_freq in result.frequencies().items():
@@ -68,7 +129,6 @@ def compute_normalization_energy(result: qibo.result.CircuitResult, nshots: int 
     
 def compute_total_energy(parameters: list[float], circuit, dataset: pd.DataFrame, nshots = NSHOTS, num_qubits = N) -> float:
     
-    # circuit = build_hardware_efficient_ansatz(num_qubits,parameters)
     circuit.set_parameters(parameters)
     # Measure the qubits quantum state
     result = circuit(nshots=nshots) 
