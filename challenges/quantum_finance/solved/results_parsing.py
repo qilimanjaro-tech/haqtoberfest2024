@@ -31,6 +31,17 @@ def get_max_prob(result: CircuitResult, nshots: int = NSHOTS) -> float:
     return max(probs)
 
 def get_optimal_binary_portfolios_prob_and_energy(ansatz: Circuit, dataset: pd.DataFrame, nshots: int = NSHOTS, tolerance: int = TOLERANCE) -> dict:
+    """Returns the portfolios that turned out to have a certain probability. The threshold is defined as `1-docstring_probability < TOLERANCE`. It is suggested to call get_max_prob() and compute_cost_function().
+
+    Args:
+        ansatz (Circuit): _description_
+        dataset (pd.DataFrame): _description_
+        nshots (int, optional): _description_. Defaults to NSHOTS.
+        tolerance (int, optional): _description_. Defaults to TOLERANCE.
+
+    Returns:
+        dict: _description_
+    """
     result = ansatz(nshots=nshots)
     optimal_portfolios = {}
     for bit_string, stat_freq in result.frequencies().items():
