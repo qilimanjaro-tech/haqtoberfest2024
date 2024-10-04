@@ -66,12 +66,12 @@ def compute_normalization_energy(result: qibo.result.CircuitResult, nshots: int 
         norm_energy += (stat_freq / nshots) * normalization_cost_function(string_to_int_list(bit_string))
     return norm_energy
     
-def compute_total_energy(parameters: list[float], dataset: pd.DataFrame, nshots = NSHOTS, num_qubits = N) -> float:
+def compute_total_energy(parameters: list[float], circuit, dataset: pd.DataFrame, nshots = NSHOTS, num_qubits = N) -> float:
     
-    circuit = build_hardware_efficient_ansatz(num_qubits,parameters)
-    
+    # circuit = build_hardware_efficient_ansatz(num_qubits,parameters)
+    circuit.set_parameters(parameters)
     # Measure the qubits quantum state
     result = circuit(nshots=nshots) 
     total_energy = LAMBDA_1 * compute_return_energy(result,dataset) + LAMBDA_2 * compute_risk_energy(result,dataset) + LAMBDA_3 * compute_normalization_energy(result)
-    
+    print('Energy:', total_energy)
     return total_energy
