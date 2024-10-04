@@ -10,3 +10,4 @@ This folder contains all the necessary information about the tensor networks cha
 - [Tensor networks challenge](notebooks/Tensor_networks_challenge.ipynb): notebook containing this year's **two** challenges. Each of the challenges in the file are independent. The first one of medium difficulty called Perfect sampling algorithm consists of implementing a sampling algorithm to obtain probability distributions of MPS tensor networks, as well as the simulation of quantum states to check the proper functioning of the algorithm. The second challenge, a little more difficult, called Canonical truncation algorithm, consists of the implementation of a truncation algorithm to reduce the dimensionality of an MPS network.
 
 
+To install the necessary python libraries run the command ```pip install -r requirements.txt``` in the terminal.
