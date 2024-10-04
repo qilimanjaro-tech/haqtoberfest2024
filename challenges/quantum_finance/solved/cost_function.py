@@ -110,25 +110,66 @@ def compute_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float
 
 
 def compute_return_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS) -> float: 
+    """Calls the return cost functions and weights to contribution of every bistring to the energy of the first term of the hamiltonian in (7). 
+
+    Args:
+        result (qibo.result.CircuitResult): Result from measuring a qibo circuit. 
+        dataset (pd.DataFrame): data
+        nshots (int, optional): number of measurement of the ansatz. Defaults to NSHOTS.
+
+    Returns:
+        float: energy
+    """
     return_energy = 0
     for bit_string, stat_freq in result.frequencies().items():
         return_energy += (stat_freq / nshots) * return_cost_function(dataset,string_to_int_list(bit_string))
     return return_energy
 
 def compute_risk_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS) -> float: 
+    """Calls the risk cost functions and weights to contribution of every bistring to the energy of the second term of the hamiltonian in (7). 
+
+    Args:
+        result (qibo.result.CircuitResult): Result from measuring a qibo circuit. 
+        dataset (pd.DataFrame): data
+        nshots (int, optional): number of measurement of the ansatz. Defaults to NSHOTS.
+
+    Returns:
+        float: energy
+    """
     risk_energy = 0
     for bit_string, stat_freq in result.frequencies().items():
         risk_energy += (stat_freq / nshots) * risk_cost_function(dataset,string_to_int_list(bit_string))
     return risk_energy
 
 def compute_normalization_energy(result: qibo.result.CircuitResult, nshots: int = NSHOTS) -> float: 
+    """Calls the normalization cost functions and weights to contribution of every bistring to the energy of the third term of the hamiltonian in (7). 
+
+    Args:
+        result (qibo.result.CircuitResult): Result from measuring a qibo circuit. 
+        dataset (pd.DataFrame): data
+        nshots (int, optional): number of measurement of the ansatz. Defaults to NSHOTS.
+
+    Returns:
+        float: energy
+    """
     norm_energy = 0
     for bit_string, stat_freq in result.frequencies().items():
         norm_energy += (stat_freq / nshots) * normalization_cost_function(string_to_int_list(bit_string))
     return norm_energy
     
 def compute_total_energy(parameters: list[float], circuit, dataset: pd.DataFrame, nshots = NSHOTS, num_qubits = N) -> float:
-    
+    """Aggregates the the energies of all the terms. This is the loss function and the parametrs are the ones optimized. First, use Circuit.set_parameters(parameters) to load the new set of parameters to the ansatz at every iteration of the optimization process. Second, measure the circuit and forward to result to energy functions. 
+
+    Args:
+        parameters (list[float]): _description_
+        circuit (_type_): _description_
+        dataset (pd.DataFrame): _description_
+        nshots (_type_, optional): _description_. Defaults to NSHOTS.
+        num_qubits (_type_, optional): _description_. Defaults to N.
+
+    Returns:
+        float: _description_
+    """
     circuit.set_parameters(parameters)
     # Measure the qubits quantum state
     result = circuit(nshots=nshots) 
