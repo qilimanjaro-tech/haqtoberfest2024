@@ -3,7 +3,7 @@
 
 This folder contains all the necessary information about the tensor networks challenge. In the notebooks folder you will find the files that contain the different parts of the challenge. Inside the folder you can find:
 
-- Tensor networks tutorials: notebook containing explanations about basic concepts and examples about tensor networks.
+- [Tensor networks tutorials](notebooks/Tensor_networks_tutorials.ipynb): notebook containing explanations about basic concepts and examples about tensor networks.
 
 - Tensor networks exercises: notebook containing unsolved tensor networks exercises that must be completed before taking the challenge. These exercises provide a smoother entry to solving the challenges.
 
