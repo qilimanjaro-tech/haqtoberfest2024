@@ -16,8 +16,8 @@ def build_hardware_efficient_ansatz(num_qubits: int = N, num_layers: int = NLAYE
     """
     def add_layer(): #layer definition
         c.add((gates.U2(q, 0, 0) for q in range(num_qubits))) #Column of U2
-        if two_gate="CNOT": c.add((gates.CNOT(q, q+1) for q in range(num_qubits-1))) #CNOT Mesh
-        if two_gate="CZ": c.add((gates.CZ(q, q+1) for q in range(num_qubits-1))) #CZ Mesh
+        if two_gate == "CNOT": c.add((gates.CNOT(q, q+1) for q in range(num_qubits-1))) #CNOT Mesh
+        if two_gate == "CZ": c.add((gates.CZ(q, q+1) for q in range(num_qubits-1))) #CZ Mesh
         c.add((gates.U1(q, 0) for q in range(num_qubits))) #Column of U1
 
     c = models.Circuit(num_qubits)
