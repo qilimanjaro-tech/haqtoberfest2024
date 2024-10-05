@@ -49,23 +49,60 @@ def get_optimal_binary_portfolios_prob_and_energy(ansatz: Circuit, dataset: pd.D
             optimal_portfolios[bit_string] = {'stat_freq': stat_freq/nshots, 'energy': compute_cost_function(dataset, string_to_int_list(bit_string))}
     return optimal_portfolios
 
-def get_binary_portfolio(assets, ordered_bitstring, num_qubit_per_asset = K):
+def get_binary_portfolio(assets: list, ordered_bitstring, num_qubit_per_asset = K) -> dict:
+    """Returns a binry portfolio -e.g, {'asset_1':'110, 'asset_2':'101'}. To provide the assets you can user DataFrame.columns.
+
+    Args:
+        assets (_type_): name of the asset
+        ordered_bitstring (_type_): portfolio
+        num_qubit_per_asset (_type_, optional): _description_. Defaults to K.
+
+    Returns:
+        dict: binary portfolio
+    """
     weights = [ordered_bitstring[i:i+num_qubit_per_asset] for i in range(0, len(ordered_bitstring),num_qubit_per_asset)]
     return dict(zip(assets,weights))
 
-def get_asset_weight_decimal(asset_bit_string):
+def get_asset_weight_decimal(asset_bit_string: str) -> float:
+    """Given a bistring that represent the weight of one asset, translates it to the decimal base.
+
+    Args:
+        asset_bit_string (_type_): bitstring
+
+    Returns:
+        _type_: _description_
+    """
     w = 0
     for k,bit in enumerate(asset_bit_string):
        w += 2**(k-1)*int(bit)*1/(2**len(asset_bit_string)) # discretization !
     return w  
 
-def get_decimal_portfolio(binary_portfolio):
+def get_decimal_portfolio(binary_portfolio: dict) -> dict:
+    """Given a binary portfolio, it returns the corresponding portfolio in the decimal base
+    Defining and calling get_asset_weight_decimal(asset_bit_string: str) -> float may be of help.  
+
+    Args:
+        binary_portfolio (_type_): _description_
+
+    Returns:
+        dict: e.g {'asset1':0.23, 'asset2':0.4 ...}
+    """
     portfolio = {}
     for asset, w in binary_portfolio.items():
         portfolio[asset] = get_asset_weight_decimal(w)
     return portfolio
         
-def get_portfolio_metrics(portfolio: dict, dataset: pd.DataFrame, r: float = RISK_FREE_RATE):
+def get_portfolio_metrics(portfolio: dict, dataset: pd.DataFrame, r: float = RISK_FREE_RATE) -> dict:
+    """Calculates the anualized return, volatilty and Sharp Ratio. Assume log returns are normally distributed.
+
+    Args:
+        portfolio (dict): decimal portfolio
+        dataset (pd.DataFrame): _description_
+        r (float, optional): _description_. Defaults to RISK_FREE_RATE.
+
+    Returns:
+        _type_: _description_
+    """
     import numpy as np
     normalized_weights = list(portfolio.values()) / np.sum(list(portfolio.values()))
 
