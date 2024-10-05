@@ -23,7 +23,6 @@ def build_hardware_efficient_ansatz(num_qubits: int = N, num_layers: int = NLAYE
     c = models.Circuit(num_qubits)
     c.add((gates.U2(q, 0, 0) for q in range(num_qubits))) #First column of U2
     for _ in range(num_layers): add_layer()
-    c.add((gates.U1(q, 0) for q in range(num_qubits))) #First column of U1
     c.add((gates.M(q) for q in range(num_qubits))) #Column of qubit Measurement
 
     return c
