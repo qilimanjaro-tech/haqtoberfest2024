@@ -22,18 +22,21 @@ from qibo.result import CircuitResult
 from utils import string_to_int_list
 
 
-def get_minimum_energy(portfolios: dict) -> Tuple[float, str]:
-    """Returns the minimum energy of a portfolio
+def get_minimum_energy(portfolios: dict) -> float:
+    """Returns the minimum energy of a portfolio.
 
     Args:
-        portfolios (dict): _description_
+        portfolios (dict): all the considered porfolios (sets
+            of weigths for the assets). THese are the ones obtained
+            in the measurement.
 
     Returns:
-        float: _description_
+        float: energy of the minimum energy portfolio
+        dict: the portfolio that gives the minimum energy.
     """
 
     min_energy = float('inf')
-    min_energy_portfolio = None
+    min_energy_portfolio = "none"
     for k, metrics in portfolios.items():
         energy = metrics.get('energy')
         if energy is not None and energy < min_energy:
@@ -44,15 +47,18 @@ def get_minimum_energy(portfolios: dict) -> Tuple[float, str]:
 
 
 def get_max_prob(result: CircuitResult, nshots: int = NSHOTS) -> float:
-    """Returns the maximum probability amongst all the portfolios
+    """Returns the maximum probability among all the portfolios,
+    the one that most appeared among the Qcircuit runs.
 
     Args:
-        result (CircuitResult): _description_
-        nshots (int, optional): _description_. Defaults to NSHOTS.
+        result (CircuitResult): result of the circuit run.
+        nshots (int, optional): number of times we have runned the circuit.
+            Defaults to NSHOTS.
 
     Returns:
-        float: max prob
+        float: max probability
     """
+    # Get all the frequencies (how many times we have each portfolio)
     frequencies = result.frequencies().values()
 
     max_prob = 0
@@ -65,9 +71,8 @@ def get_max_prob(result: CircuitResult, nshots: int = NSHOTS) -> float:
 
 def get_optimal_binary_portfolios_prob_and_energy(ansatz: Circuit, dataset: pd.DataFrame, nshots: int = NSHOTS,
                                                   tolerance: int = TOLERANCE) -> dict:
-    """Returns the portfolios that turned out to have a certain probability. The threshold is defined as `1-docstring_probability < TOLERANCE`. 
-    
-    It is suggested to call get_max_prob() and compute_cost_function().
+    """Returns the portfolios that turned out to have a certain probability.
+    The threshold is defined as `1-docstring_probability < TOLERANCE`. 
 
     Args:
         ansatz (Circuit): _description_
@@ -86,7 +91,9 @@ def get_optimal_binary_portfolios_prob_and_energy(ansatz: Circuit, dataset: pd.D
         prob = stat_freq / nshots
         if (max_prob - prob) < tolerance:
             optimal_portfolios[bit_string] = {
-                'stat_freq': prob, 'energy': compute_cost_function(dataset, string_to_int_list(bit_string))}
+                'stat_freq': prob,
+                'energy': compute_cost_function(dataset,
+                                                string_to_int_list(bit_string))}
     return optimal_portfolios
 
 
