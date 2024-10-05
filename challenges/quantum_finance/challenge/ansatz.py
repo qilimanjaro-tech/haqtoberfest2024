@@ -30,5 +30,4 @@ def build_hardware_efficient_ansatz(num_qubits: int = N, num_layers: int = NLAYE
 def compute_number_of_params_hwea(num_qubits: int, num_layers: int) -> int:
     """Calculates the number of parameters (angles of rotation of the qubits) of the Hardware efficient ansatz (FIG 2) depending on the number of qubits and layers.
     """
-
-    return 
+    return num_qubits * (2 + 3 * num_layers) 
