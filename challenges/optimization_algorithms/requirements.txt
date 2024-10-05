@@ -1,0 +1,5 @@
+qibo==0.2.12
+numpy
+scipy
+matplotlib
+jupyter
