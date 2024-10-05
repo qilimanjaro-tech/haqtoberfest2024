@@ -22,8 +22,7 @@ def A(i: int, bit_string: list[int]) -> float:
     """
 
     v = 1 / np.power(2, range(1, K + 1))
-    Z = bit_string[i * K:(i + 1) * K]
-    x = np.array([(1 - z) / 2 for z in Z])
+    x = np.array(bit_string[i * K:(i + 1) * K])
 
     return np.dot(v, x)
 
@@ -41,7 +40,7 @@ def return_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
         float: _description_
     """
 
-    vA = np.array(A(i, bit_string) for i in range(0, NUM_ASSETS))
+    vA = np.array([A(i, bit_string) for i in range(0, NUM_ASSETS)])
     return np.dot(dataset, vA).mean()
 
 
@@ -61,9 +60,9 @@ def tilde_sigma(i: int, j: int, dataset: pd.DataFrame) -> float:
     cov = dataset.cov()
 
     if i == j:
-        return cov[i, i]
+        return cov.iloc[i, i]
     elif i < j:
-        return 2 * cov[i, j]
+        return 2 * cov.iloc[i, j]
     else:
         return 0
 
@@ -79,7 +78,7 @@ def risk_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
         float: _description_
     """
 
-    vA = np.array(A(i, bit_string) for i in range(0, NUM_ASSETS))
+    vA = np.array([A(i, bit_string) for i in range(0, NUM_ASSETS)])
 
     t_sigma = np.array(
         [
@@ -138,7 +137,15 @@ def compute_return_energy(result: qibo.result.CircuitResult, dataset: pd.DataFra
     Returns:
         float: energy
     """
-    return
+
+    freq = result.frequencies(binary=True)
+
+    energy = np.sum([
+        val * return_cost_function(dataset, [int(bit) for bit in k])
+        for k, val in freq.items()
+    ])
+
+    return energy
 
 
 def compute_risk_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS) -> float:
@@ -153,8 +160,15 @@ def compute_risk_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame
         float: energy
     """
 
-    return
 
+    freq = result.frequencies(binary=True)
+
+    energy = np.sum([
+        val * risk_cost_function(dataset, [int(bit) for bit in k])
+        for k, val in freq.items()
+    ])
+
+    return energy
 
 def compute_normalization_energy(result: qibo.result.CircuitResult, nshots: int = NSHOTS) -> float:
     """Calls the normalization cost functions and weights to contribution of every bistring to the energy of the third term of the hamiltonian in (7). 
@@ -167,10 +181,17 @@ def compute_normalization_energy(result: qibo.result.CircuitResult, nshots: int 
     Returns:
         float: energy
     """
-    return
 
+    freq = result.frequencies(binary=True)
 
-def compute_total_energy(parameters: list[float], circuit, dataset: pd.DataFrame, nshots=NSHOTS, num_qubits=N) -> float:
+    energy = np.sum([
+        val * normalization_cost_function([int(bit) for bit in k])
+        for k, val in freq.items()
+    ])
+
+    return energy
+
+def compute_total_energy(parameters: list[float], circuit: qibo.Circuit, dataset: pd.DataFrame, nshots=NSHOTS, num_qubits=N) -> float:
     """Aggregates the the energies of all the terms. This is the loss function and the parametrs are the ones optimized. First, use Circuit.set_parameters(parameters) to load the new set of parameters to the ansatz at every iteration of the optimization process. Second, measure the circuit and forward to result to energy functions. 
 
     Args:
@@ -184,4 +205,8 @@ def compute_total_energy(parameters: list[float], circuit, dataset: pd.DataFrame
         float: _description_
     """
 
-    return
+    result = circuit.execute(nshots=nshots)
+
+    return - LAMBDA_1 * compute_return_energy(result, dataset) \
+        + LAMBDA_2 * compute_risk_energy(result, dataset) \
+        + LAMBDA_3 * compute_normalization_energy(result)
