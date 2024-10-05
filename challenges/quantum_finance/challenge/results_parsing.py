@@ -28,7 +28,14 @@ def get_minimum_energy(portfolios: dict) -> float:
     Returns:
         float: _description_
     """
-    return
+
+    min_energy = float('inf')
+    for _, metrics in portfolios.items():
+        energy = metrics.get('energy')
+        if energy is not None and energy < min_energy:
+            min_energy = energy
+
+    return min_energy
 
 def get_max_prob(result: CircuitResult, nshots: int = NSHOTS) -> float:
     """Returns the maximum probability amongst all the portfolios
@@ -40,10 +47,19 @@ def get_max_prob(result: CircuitResult, nshots: int = NSHOTS) -> float:
     Returns:
         float: max prob
     """
-    return 
+    frequencies = result.frequencies().values()
+    
+    max_prob = 0
+    for freq in frequencies:
+        if (prob := freq / nshots) > max_prob:
+            max_prob = prob
+
+    return max_prob
 
 def get_optimal_binary_portfolios_prob_and_energy(ansatz: Circuit, dataset: pd.DataFrame, nshots: int = NSHOTS, tolerance: int = TOLERANCE) -> dict:
-    """Returns the portfolios that turned out to have a certain probability. The threshold is defined as `1-docstring_probability < TOLERANCE`. It is suggested to call get_max_prob() and compute_cost_function().
+    """Returns the portfolios that turned out to have a certain probability. The threshold is defined as `1-docstring_probability < TOLERANCE`. 
+    
+    It is suggested to call get_max_prob() and compute_cost_function().
 
     Args:
         ansatz (Circuit): _description_
