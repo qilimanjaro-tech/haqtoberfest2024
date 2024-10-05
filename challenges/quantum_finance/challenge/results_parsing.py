@@ -69,41 +69,51 @@ def get_max_prob(result: CircuitResult, nshots: int = NSHOTS) -> float:
     return max_prob
 
 
-def get_optimal_binary_portfolios_prob_and_energy(ansatz: Circuit, dataset: pd.DataFrame, nshots: int = NSHOTS,
-                                                  tolerance: int = TOLERANCE) -> dict:
+def get_optimal_binary_portfolios_prob_and_energy(ansatz: Circuit,
+                                                  dataset: pd.DataFrame,
+                                                  nshots: int = NSHOTS,
+                                                  tolerance: int = TOLERANCE)\
+                                                      -> dict:
     """Returns the portfolios that turned out to have a certain probability.
-    The threshold is defined as `1-docstring_probability < TOLERANCE`. 
+    The threshold is defined as `1-docstring_probability < TOLERANCE`.
 
     Args:
         ansatz (Circuit): _description_
-        dataset (pd.DataFrame): _description_
-        nshots (int, optional): _description_. Defaults to NSHOTS.
-        tolerance (int, optional): _description_. Defaults to TOLERANCE.
+        dataset (pd.DataFrame): dataset with the values obtained from Yahoo
+            (X_i) for the daily logaritmic returns.
+        nshots (int, optional): number of times we have runned the circuit.
+            Defaults to NSHOTS.
+        tolerance (int, optional): threshold, that is defined as
+            1-docstring_probability < TOLERANCE. Defaults to TOLERANCE.
 
     Returns:
-        dict: _description_
+        dict: porfolios that fulfill the tolerance condition.
     """
+    # Run the circuit
     result = ansatz(nshots=nshots)
     optimal_portfolios = {}
     max_prob = get_max_prob(result, nshots)
 
     for bit_string, stat_freq in result.frequencies().items():
+
         prob = stat_freq / nshots
         if (max_prob - prob) < tolerance:
             optimal_portfolios[bit_string] = {
                 'stat_freq': prob,
-                'energy': compute_cost_function(dataset,
-                                                string_to_int_list(bit_string))}
+                'energy': compute_cost_function(
+                    dataset, string_to_int_list(bit_string))}
     return optimal_portfolios
 
 
-def get_binary_portfolio(assets: list, ordered_bitstring, num_qubit_per_asset=K) -> dict:
-    """Returns a binry portfolio -e.g, {'asset_1':'110, 'asset_2':'101'}. To provide the assets you can user DataFrame.columns.
+def get_binary_portfolio(assets: list, ordered_bitstring,
+                         num_qubit_per_asset=K) -> dict:
+    """Returns a binary portfolio -e.g, {'asset_1':'110, 'asset_2':'101'}.
 
     Args:
-        assets (_type_): name of the asset
+        assets (list): name of the asset
         ordered_bitstring (_type_): portfolio
-        num_qubit_per_asset (_type_, optional): _description_. Defaults to K.
+        num_qubit_per_asset (_type_, optional): Number of qubits for encoding
+            each asset. Defaults to K.
 
     Returns:
         dict: binary portfolio
@@ -127,8 +137,8 @@ def get_asset_weight_decimal(asset_bit_string: str) -> float:
 
 
 def get_decimal_portfolio(binary_portfolio: dict) -> dict:
-    """Given a binary portfolio, it returns the corresponding portfolio in the decimal base
-    Defining and calling get_asset_weight_decimal(asset_bit_string: str) -> float may be of help.  
+    """Given a binary portfolio, it returns the corresponding portfolio in
+    the decimal base.
 
     Args:
         binary_portfolio (_type_): _description_
@@ -142,8 +152,10 @@ def get_decimal_portfolio(binary_portfolio: dict) -> dict:
     return decimal_portfolio
 
 
-def get_portfolio_metrics(portfolio: dict, dataset: pd.DataFrame, r: float = RISK_FREE_RATE) -> dict:
-    """Calculates the anualized return, volatilty and Sharp Ratio. Assume log returns are normally distributed.
+def get_portfolio_metrics(portfolio: dict, dataset: pd.DataFrame,
+                          r: float = RISK_FREE_RATE) -> dict:
+    """Calculates the anualized return, volatilty and Sharp Ratio. Assume log
+    returns are normally distributed.
 
     Args:
         portfolio (dict): decimal portfolio
@@ -151,7 +163,7 @@ def get_portfolio_metrics(portfolio: dict, dataset: pd.DataFrame, r: float = RIS
         r (float, optional): _description_. Defaults to RISK_FREE_RATE.
 
     Returns:
-        _type_: _description_
+        dict: _description_
     """
     assets = list(portfolio.keys())
     # Calculate mean returns for each asset
