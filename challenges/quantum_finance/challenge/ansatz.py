@@ -15,16 +15,10 @@ def build_hardware_efficient_ansatz(num_qubits: int = N, num_layers: int = NLAYE
         models.Circuit: ansatz
     """
     c = models.Circuit(num_qubits)
-    c.add([gates.U2(qubit, 0, 0) for qubit in range(num_qubits)])
-    for _ in range(num_layers):
-        c.add([gates.U2(qubit, 0, 0) for qubit in range(num_qubits)])
-        c.add([TWO_QUBIT_GATES[two_gate](qubit, qubit+1)] for qubit in range(0,num_qubits-1))
-        c.add([gates.U1(qubit,0) for qubit in range(num_qubits)])
-            
-    c.add([gates.M(qubit) for qubit in range(num_qubits)])
+   
     return c
 
 def compute_number_of_params_hwea(num_qubits: int, num_layers: int) -> int:
     """Calculates the number of parameters (angles of rotation of the qubits) of the Hardware efficient ansatz (FIG 2) depending on the number of qubits and layers.
     """
-    return num_qubits * (2 * num_layers + 2 + num_layers)
+    return 
