@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from qibo import Circuit
 from qibo.gates import gates
@@ -26,6 +28,9 @@ def circuit_result(circuit):
 
     yield result
 
+
+@patch('model_params.K', 1)
+@patch('model_params.NUM_ASSETS', 3)
 def test_c_circuit(circuit_result):
     e = compute_normalization_energy(circuit_result)
 
