@@ -15,7 +15,21 @@ def build_hardware_efficient_ansatz(num_qubits: int = N, num_layers: int = NLAYE
         models.Circuit: ansatz
     """
     c = models.Circuit(num_qubits)
-   
+
+    c.add((gates.U2(q, 0, 0) for q in range(num_qubits))) #First column of U2
+    c.add((gates.U2(q, 0, 0) for q in range(num_qubits))) #Second column of U2
+    c.add((gates.CNOT(q, q+1) for q in range(num_qubits-1))) #First CNOT Mesh
+
+    c.add((gates.U1(q, 0) for q in range(num_qubits))) #First column of U1
+    c.add((gates.U2(q, 0, 0) for q in range(num_qubits))) #Third column of U2
+    c.add((gates.CNOT(q, q+1) for q in range(num_qubits-1))) #Second CNOT Mesh
+
+    c.add((gates.U1(q, 0) for q in range(num_qubits))) #Second column of U1
+    c.add((gates.U2(q, 0, 0) for q in range(num_qubits))) #Fourth column of U2
+    c.add((gates.CNOT(q, q+1) for q in range(num_qubits-1))) #Third CNOT Mesh
+
+    c.add((gates.U1(q, 0) for q in range(num_qubits))) #Third column of U1
+    
     return c
 
 def compute_number_of_params_hwea(num_qubits: int, num_layers: int) -> int:
