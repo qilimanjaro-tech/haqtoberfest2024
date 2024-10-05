@@ -11,16 +11,21 @@ from utils import string_to_int_list
 
 
 def A(i: int, bit_string: list[int]) -> float:
-    """Building block of the hamiltonian. Note that we need to perform the change of variable x = (1-z)/2 where z are the eigenvalues of sigma_z. If we apply this change then this function depends on a bitstring, which is the outcome of quantum measurement. Make sure you undertand this point :)
+    """Building block of the hamiltonian. Note that we need to perform the
+    change of variable x = (1-z)/2 where z are the eigenvalues of sigma_z.
+    If we apply this change then this function depends on a bitstring,
+    which is the outcome of quantum measurement. Make sure you undertand
+    this point :)
 
+    A_i on eq. 7
     Args:
         i (int): index of the asset to which it applies              
-        bit_string (list[int]): bit string that encodes a portfolio
+        bit_string (list[int]): bit string that encodes a portfolio.
+        List with 0s and 1s.
 
     Returns:
-        float: 
+        float: A_i, value for asset i.
     """
-
     v = 1 / np.power(2, range(1, K + 1))
     x = np.array(bit_string[i * K:(i + 1) * K])
 
@@ -29,15 +34,20 @@ def A(i: int, bit_string: list[int]) -> float:
 
 # Return term
 
-def return_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
-    """Corresponds to the first term of the expected value of the Hamiltonian in (7).
+def return_cost_function(dataset: pd.DataFrame, bit_string: list[int])\
+      -> float:
+    """Corresponds to the first term of the expected value of the Hamiltonian
+    in (7).
 
     Args:
-        dataset (pd.DataFrame): _description_
-        bit_string (list[int]): _description_
+        dataset (pd.DataFrame): dataset with the values obtained from Yahoo
+            (X_i) for the daily logaritmic returns.
+        bit_string (list[int]): bit string that encodes a portfolio.
+            List with 0s and 1s.
 
     Returns:
-        float: _description_
+        float: expected logaritmic return \sum_i A_i X_i, where here X_i
+            is the average of the cost over all the analyzed days.
     """
 
     vA = np.array([A(i, bit_string) for i in range(0, NUM_ASSETS)])
@@ -47,12 +57,13 @@ def return_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
 # Volatility term
 
 def tilde_sigma(i: int, j: int, dataset: pd.DataFrame) -> float:
-    """Utility function for building the risk term of the hamiltonian. You can use pd.DataFrame.cov() to calculate the covariance matrix
+    """Utility function for building the risk term of the Hamiltonian.
 
     Args:
-        i (int): rows
-        j (int): columns
-        dataset (pd.DataFrame): daily log returns
+        i (int): row number
+        j (int): column number
+        dataset (pd.DataFrame): dataset with the values obtained from Yahoo
+            (X_i) for the daily logaritmic returns.
 
     Returns:
         float: 

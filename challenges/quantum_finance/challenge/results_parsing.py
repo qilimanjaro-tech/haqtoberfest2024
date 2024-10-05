@@ -1,21 +1,11 @@
-from typing import Tuple
-
 import numpy as np
 import pandas as pd
 from cost_function import compute_cost_function
 from model_params import (
-    LAMBDA_1,
-    LAMBDA_2,
-    LAMBDA_3,
-    NLAYERS,
     NSHOTS,
-    NUM_ASSETS,
     RISK_FREE_RATE,
-    SIGMA_TARGET,
     TOLERANCE,
-    TWO_QUBIT_GATES,
-    K,
-    N,
+    K
 )
 from qibo.models import Circuit
 from qibo.result import CircuitResult
@@ -180,7 +170,8 @@ def get_portfolio_metrics(portfolio: dict, dataset: pd.DataFrame,
     mean_returns = dataset[list(portfolio.keys())].mean()
 
     # Calculate the weighted sum of returns
-    portfolio_return = sum(portfolio[asset] * mean_returns[asset] for asset in portfolio)
+    portfolio_return = sum(portfolio[asset] * mean_returns[asset]
+                           for asset in portfolio)
 
     # Calculate annualized return (assuming 252 trading days in a year)
     annualized_return = portfolio_return * 252
@@ -190,7 +181,8 @@ def get_portfolio_metrics(portfolio: dict, dataset: pd.DataFrame,
     # Calculate portfolio variance
     portfolio_variance = weights_array.T @ cov_matrix @ weights_array
 
-    # Calculate annualized volatility (assuming daily returns and 252 trading days)
+    # Calculate annualized volatility
+    # (assuming daily returns and 252 trading days)
     annualized_volatility = np.sqrt(portfolio_variance) * np.sqrt(252)
 
     sharpe_ratio = (annualized_return - r) / annualized_volatility
