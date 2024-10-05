@@ -1,4 +1,5 @@
 # Define the vector that contains the pauli opeations
+import numpy as np
 import pandas as pd
 import qibo
 from ansatz import build_hardware_efficient_ansatz
@@ -17,7 +18,12 @@ def A(i: int, bit_string: list[int]) -> float:
     Returns:
         float: 
     """
-    return sum(2 ** (k - 2) * ((1 - bit_string[k + i*K]) / 2) for k in range(K))
+
+    v = 1 / np.power(2, range(1, K + 1))
+    Z = bit_string[i * K:(i + 1) * K]
+    x = np.array([(1 - z) / 2 for z in Z])
+
+    return np.dot(v, x)
 
 # Return term
 
