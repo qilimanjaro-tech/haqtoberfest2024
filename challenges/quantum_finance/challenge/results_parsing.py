@@ -108,11 +108,13 @@ def get_optimal_binary_portfolios_prob_and_energy(ansatz: Circuit,
 def get_binary_portfolio(assets: list, ordered_bitstring,
                          num_qubit_per_asset=K) -> dict:
     """Returns a binary portfolio -e.g, {'asset_1':'110, 'asset_2':'101'}.
+    This relates the bits of the porfolio with the asset.
 
     Args:
         assets (list): name of the asset
-        ordered_bitstring (_type_): portfolio
-        num_qubit_per_asset (_type_, optional): Number of qubits for encoding
+        ordered_bitstring (str): string of the bits that represent our
+            porfolio.
+        num_qubit_per_asset (int, optional): Number of qubits for encoding
             each asset. Defaults to K.
 
     Returns:
@@ -120,31 +122,37 @@ def get_binary_portfolio(assets: list, ordered_bitstring,
     """
     binary_portfolio = {}
     for i in range(len(assets)):
-        binary_portfolio[assets[i]] = ordered_bitstring[i * num_qubit_per_asset:(i + 1) * num_qubit_per_asset]
+        binary_portfolio[assets[i]] = \
+            ordered_bitstring[i * num_qubit_per_asset:
+                              (i + 1) * num_qubit_per_asset]
     return binary_portfolio
 
 
 def get_asset_weight_decimal(asset_bit_string: str) -> float:
-    """Given a bistring that represent the weight of one asset, translates it to the decimal base.
+    """Given a bistring that represent the weight of one asset, translates it
+    to the decimal base.
 
     Args:
-        asset_bit_string (_type_): bitstring
+        asset_bit_string (str): bitstring with K bits representing the weigt
+          of a given porfolio in binary numbers.
 
     Returns:
-        _type_: _description_
+        float: the given bitstring in decimals
     """
     return int(asset_bit_string, 2) / (2 ** len(asset_bit_string))
 
 
 def get_decimal_portfolio(binary_portfolio: dict) -> dict:
     """Given a binary portfolio, it returns the corresponding portfolio in
-    the decimal base.
+    the decimal base (with the weights in decimal numbers)
 
     Args:
-        binary_portfolio (_type_): _description_
+        binary_portfolio (dict): porfolio with the assets and the
+            corresponding weights in binary numbers.
 
     Returns:
-        dict: e.g {'asset1':0.23, 'asset2':0.4 ...}
+        dict: e.g {'asset1':0.23, 'asset2':0.4 ...} porfolio with the
+            assets and the corresponding weights in decimal numbers.
     """
     decimal_portfolio = {}
     for asset, bit_string in binary_portfolio.items():
@@ -159,11 +167,13 @@ def get_portfolio_metrics(portfolio: dict, dataset: pd.DataFrame,
 
     Args:
         portfolio (dict): decimal portfolio
-        dataset (pd.DataFrame): _description_
-        r (float, optional): _description_. Defaults to RISK_FREE_RATE.
+        dataset (pd.DataFrame): dataset with the values obtained from Yahoo
+            (X_i) for the daily logaritmic returns.
+        r (float, optional): risk free rate. Defaults to RISK_FREE_RATE.
 
     Returns:
-        dict: _description_
+        dict: contains the metrics ('Returns', 'Volatility'
+            'Sharpe Ratio' and 'Normalized Weights') of the input porfolio.
     """
     assets = list(portfolio.keys())
     # Calculate mean returns for each asset
