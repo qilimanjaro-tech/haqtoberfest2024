@@ -1,11 +1,14 @@
 # Define the vector that contains the pauli opeations
+import numpy as np
 import pandas as pd
 import qibo
 from ansatz import build_hardware_efficient_ansatz
 from model_params import LAMBDA_1, LAMBDA_2, LAMBDA_3, NLAYERS, NSHOTS, NUM_ASSETS, SIGMA_TARGET, TWO_QUBIT_GATES, K, N
 from utils import string_to_int_list
 
+
 # All this functions should help you build the cost function of the problem, which is the expected value of the Hamiltonian defined in (7).
+
 
 def A(i: int, bit_string: list[int]) -> float:
     """Building block of the hamiltonian. Note that we need to perform the change of variable x = (1-z)/2 where z are the eigenvalues of sigma_z. If we apply this change then this function depends on a bitstring, which is the outcome of quantum measurement. Make sure you undertand this point :)
@@ -17,7 +20,13 @@ def A(i: int, bit_string: list[int]) -> float:
     Returns:
         float: 
     """
-    return 
+
+    v = 1 / np.power(2, range(1, K + 1))
+    Z = bit_string[i * K:(i + 1) * K]
+    x = np.array([(1 - z) / 2 for z in Z])
+
+    return np.dot(v, x)
+
 
 # Return term
 
@@ -32,12 +41,13 @@ def return_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
         float: _description_
     """
 
-    return 
+    vA = np.array(A(i, bit_string) for i in range(0, NUM_ASSETS))
+    return np.dot(dataset, vA).mean()
 
 
 # Volatility term
 
-def tilde_sigma(i: int,j: int, dataset: pd.DataFrame) -> float:
+def tilde_sigma(i: int, j: int, dataset: pd.DataFrame) -> float:
     """Utility function for building the risk term of the hamiltonian. You can use pd.DataFrame.cov() to calculate the covariance matrix
 
     Args:
@@ -48,8 +58,15 @@ def tilde_sigma(i: int,j: int, dataset: pd.DataFrame) -> float:
     Returns:
         float: 
     """
-    return
-        
+    cov = dataset.cov()
+
+    if i == j:
+        return cov[i, i]
+    elif i < j:
+        return 2 * cov[i, j]
+    else:
+        return 0
+
 
 def risk_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
     """Corresponds to the second term of the expected value of the Hamiltonian in (7).
@@ -62,7 +79,20 @@ def risk_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
         float: _description_
     """
 
-    return 
+    vA = np.array(A(i, bit_string) for i in range(0, NUM_ASSETS))
+
+    t_sigma = np.array(
+        [
+            [
+                tilde_sigma(i, j, dataset)
+                for i in range(0, NUM_ASSETS)
+            ]
+            for j in range(0, NUM_ASSETS)
+        ]
+    )
+
+    return np.dot(vA, np.dot(t_sigma, vA)) - SIGMA_TARGET ** 2
+
 
 def normalization_cost_function(bit_string: list[int]) -> float:
     """Corresponds to the third term of the expected value of the Hamiltonian in (7).
@@ -75,7 +105,7 @@ def normalization_cost_function(bit_string: list[int]) -> float:
         float: _description_
     """
 
-    return 
+    return np.power(sum(A(i, bit_string) for i in range(0, NUM_ASSETS)) - 1, 2)
 
 
 def compute_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float:
@@ -88,14 +118,16 @@ def compute_cost_function(dataset: pd.DataFrame, bit_string: list[int]) -> float
     Returns:
         float: _description_
     """
-    
-    return 
+
+    return - LAMBDA_1 * return_cost_function(dataset, bit_string) \
+        + LAMBDA_2 * risk_cost_function(dataset, bit_string) \
+        + LAMBDA_3 * normalization_cost_function(bit_string)
 
 
 ### energy
 
 
-def compute_return_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS) -> float: 
+def compute_return_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS) -> float:
     """Calls the return cost functions and weights to contribution of every bistring to the energy of the first term of the hamiltonian in (7). 
 
     Args:
@@ -106,9 +138,10 @@ def compute_return_energy(result: qibo.result.CircuitResult, dataset: pd.DataFra
     Returns:
         float: energy
     """
-    return 
+    return
 
-def compute_risk_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS) -> float: 
+
+def compute_risk_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame, nshots: int = NSHOTS) -> float:
     """Calls the risk cost functions and weights to contribution of every bistring to the energy of the second term of the hamiltonian in (7). 
 
     Args:
@@ -121,7 +154,9 @@ def compute_risk_energy(result: qibo.result.CircuitResult, dataset: pd.DataFrame
     """
 
     return
-def compute_normalization_energy(result: qibo.result.CircuitResult, nshots: int = NSHOTS) -> float: 
+
+
+def compute_normalization_energy(result: qibo.result.CircuitResult, nshots: int = NSHOTS) -> float:
     """Calls the normalization cost functions and weights to contribution of every bistring to the energy of the third term of the hamiltonian in (7). 
 
     Args:
@@ -132,9 +167,10 @@ def compute_normalization_energy(result: qibo.result.CircuitResult, nshots: int 
     Returns:
         float: energy
     """
-    return 
-    
-def compute_total_energy(parameters: list[float], circuit, dataset: pd.DataFrame, nshots = NSHOTS, num_qubits = N) -> float:
+    return
+
+
+def compute_total_energy(parameters: list[float], circuit, dataset: pd.DataFrame, nshots=NSHOTS, num_qubits=N) -> float:
     """Aggregates the the energies of all the terms. This is the loss function and the parametrs are the ones optimized. First, use Circuit.set_parameters(parameters) to load the new set of parameters to the ansatz at every iteration of the optimization process. Second, measure the circuit and forward to result to energy functions. 
 
     Args:
@@ -147,5 +183,5 @@ def compute_total_energy(parameters: list[float], circuit, dataset: pd.DataFrame
     Returns:
         float: _description_
     """
-    
-    return 
+
+    return
