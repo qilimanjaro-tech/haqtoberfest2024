@@ -53,18 +53,31 @@ def find_final_reordering(circuit, layout):
     """
     reordering_dict = deepcopy(layout)
     for gate, qubits in get_circuit_gates(circuit):
-        key_1 = None
-        key_2 = None
+        if gate == "SWAP":
+            update_reordering(qubits, reordering_dict)
+    return reordering_dict
 
-        if gate == "swap":
-            key_1 = qubits[0]
-            key_2 = qubits[1]
 
-            value1 = deepcopy(reordering_dict[f"q{key_1}"])
-            value2 = deepcopy(reordering_dict[f"q{key_2}"])
+def update_reordering(pair_to_change: tuple, layout):
+    """Get a new reordering of the qubits, given a change in two qubits.
 
-            reordering_dict[f"q{key_1}"] = value2
-            reordering_dict[f"q{key_2}"] = value1
+    Args:
+        reordering (tuple[int, int]): Pair of qubits to swap in the given layout.
+        layout (dict): Initial layout used for the circuit.
+
+    Returns:
+        dict: Final order of the qubits.
+    """
+    reordering_dict = deepcopy(layout)
+
+    key_1 = pair_to_change[0]
+    key_2 = pair_to_change[1]
+
+    value1 = deepcopy(reordering_dict[f"q{key_1}"])
+    value2 = deepcopy(reordering_dict[f"q{key_2}"])
+
+    reordering_dict[f"q{key_1}"] = value2
+    reordering_dict[f"q{key_2}"] = value1
 
     return reordering_dict
 
