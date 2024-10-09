@@ -1,6 +1,7 @@
 # Come to Qilimanjaro and learn Quantum Computing! 
 Join us at Qilimanjaro on October 5th for a 12-hour hackathon, as part of the Hacktoberfest. Whether you’re a newbie or a pro in quantum computing, come through solo, or with your crew!
 - Official [haQtoberfest 2024 announcement and registration](https://www.qilimanjaro.tech/haqtoberfest-2024/) (now closed)
+- Official recap: [Inside haQtoberfest 2024](https://www.qilimanjaro.tech/inside-haqtoberfest-2024/)
 
 ## Challenges
 - See the [challenges](https://github.com/qilimanjaro-tech/haqtoberfest2024/tree/main/challenges) directory
