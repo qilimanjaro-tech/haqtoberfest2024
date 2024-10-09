@@ -11,7 +11,12 @@ from qibo.transpiler.router import Sabre, StarConnectivityRouter
 from qibo.ui import plot_circuit
 
 
-def get_circuit_gates(circuit):
+def gate_class(gate: gates.Gate) -> str:
+    """Get the class name of the gate."""
+    return type(gate).__name__
+
+
+def get_circuit_gates(circuit: Circuit) -> list[dict]:
     """Get the gates of the circuit.
 
     Args:
@@ -20,7 +25,20 @@ def get_circuit_gates(circuit):
     Returns:
         list[dict]: List of gates in the circuit. Where each gate is a dictionary (keys: 'name', value: 'qubits').
     """
-    return [{i.name: i.qubits} for i in circuit.queue]
+    return [(gate_class(i), i.qubits) for i in circuit.queue]
+
+
+def create_gate(gate_class: str, qubits: tuple[int]) -> gates.Gate:
+    """Converts a tuple representation of qibo gate (name, qubits) into a Gate object.
+
+    Args:
+        gate_class (str): The class name of the gate. Can be "CNOT", "X", "H", or any Qibo supported class.
+        qubits (tuple [int,] | tuple[int, int]): The qubits the gate acts on.
+
+    Returns:
+        gates.Gate: The qibo Gate object.
+    """
+    return getattr(gates, gate_class)(*qubits)
 
 
 def find_final_reordering(circuit, layout):
@@ -34,9 +52,7 @@ def find_final_reordering(circuit, layout):
         dict: Final order of the qubits.
     """
     reordering_dict = deepcopy(layout)
-    for operation in get_circuit_gates(circuit):
-        for k, v in operation.items():
-            gate, qubits = k, v  # This works, because each dict, only has one entry
+    for gate, qubits in get_circuit_gates(circuit):
         key_1 = None
         key_2 = None
 
@@ -51,43 +67,6 @@ def find_final_reordering(circuit, layout):
             reordering_dict[f"q{key_2}"] = value1
 
     return reordering_dict
-
-
-def circuits_equivalence_fidelity(og_circuit, transp_circuit, layout):
-    """Check if two circuits are equivalent.
-
-    Args:
-        og_circuit (qibo.models.Circuit): Original circuit to compare.
-        transp_circuit (qibo.models.Circuit): Transpiler circuit to compare.
-        layout (dict): Layout used for the transpiled circuit.
-
-    Returns:
-        float: Fidelity between the two circuits.
-    """
-    reordering = find_final_reordering(transp_circuit, layout)
-
-    circuit_2_copy = deepcopy(transp_circuit)
-
-    # Block to mix the initial layout, with the SWAPS in the circuit
-    while True:
-        end = True
-        for k, v in reordering.items():
-            if int(k[1:]) != v:
-                circuit_2_copy.add(gates.SWAP(int(k[1:]), v))
-                swap_count_circuit = Circuit(circuit_2_copy.nqubits)
-                swap_count_circuit.add(gates.SWAP(int(k[1:]), v))
-                reordering = find_final_reordering(swap_count_circuit, reordering)
-                end = False
-                break
-        if end:
-            break
-
-    U1 = og_circuit.unitary()
-    U2 = circuit_2_copy.unitary()
-    almost_identity = U1.transpose().conjugate() @ U2
-    trace = np.trace(almost_identity)
-    normalized = np.abs(trace) / (2**og_circuit.nqubits)
-    return normalized**2
 
 
 # Define connectivity as nx.Graph
@@ -122,12 +101,12 @@ def transpile_to_star_connectivity(
     if initial_map:
         custom_passes.append(Custom(initial_map=initial_map, connectivity=star_connectivity()))
     else:
-        custom_passes.append(StarConnectivityPlacer(connectivity=star_connectivity(), middle_qubit=2))
+        custom_passes.append(StarConnectivityPlacer(middle_qubit=2))
 
     if sabre:
         custom_passes.append(Sabre(connectivity=star_connectivity()))
     else:
-        custom_passes.append(StarConnectivityRouter(connectivity=star_connectivity(), middle_qubit=2))
+        custom_passes.append(StarConnectivityRouter(middle_qubit=2))
 
     # Define the general pipeline
     custom_pipeline = Passes(
@@ -183,3 +162,58 @@ def find_best_routing(
             best_layout = final_layout
 
     return best_circuit, best_layout
+
+
+def testing_circuit1():
+    """Testing circuit 1."""
+    c = Circuit(5)
+    c.add(gates.CNOT(0, 2))
+    c.add(gates.CNOT(2, 4))
+    c.add(gates.CNOT(1, 3))
+    c.add(gates.CNOT(2, 4))
+    c.add(gates.X(0))
+    c.add(gates.CNOT(4, 3))
+    c.add(gates.X(0))
+    c.add(gates.CNOT(1, 2))
+    c.add(gates.CNOT(0, 1))
+    c.add(gates.X(2))
+    c.add(gates.H(0))
+    c.add(gates.H(3))
+    c.add(gates.CNOT(1, 0))
+    c.add(gates.CNOT(3, 2))
+    c.add(gates.CNOT(0, 3))
+
+    return c
+
+
+def testing_circuit2():
+    """Testing circuit 2."""
+    circuit = Circuit(5)
+    circuit.add(gates.CNOT(2, 0))
+    circuit.add(gates.CNOT(3, 1))
+    circuit.add(gates.X(0))
+    circuit.add(gates.H(1))
+    circuit.add(gates.CNOT(1, 4))
+    circuit.add(gates.H(1))
+    circuit.add(gates.X(0))
+    circuit.add(gates.CNOT(0, 2))
+    circuit.add(gates.H(3))
+    circuit.add(gates.CNOT(4, 1))
+    circuit.add(gates.CNOT(0, 4))
+    circuit.add(gates.X(2))
+    circuit.add(gates.H(3))
+    circuit.add(gates.CNOT(1, 3))
+    circuit.add(gates.H(0))
+    circuit.add(gates.CNOT(0, 4))
+    circuit.add(gates.CNOT(2, 3))
+    circuit.add(gates.CNOT(0, 4))
+    circuit.add(gates.X(4))
+    circuit.add(gates.CNOT(0, 4))
+    circuit.add(gates.CNOT(4, 0))
+    circuit.add(gates.CNOT(1, 2))
+    circuit.add(gates.H(2))
+    circuit.add(gates.H(0))
+    circuit.add(gates.CNOT(3, 4))
+    circuit.add(gates.CNOT(3, 2))
+
+    return circuit
