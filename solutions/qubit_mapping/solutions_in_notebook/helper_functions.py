@@ -185,7 +185,9 @@ def testing_circuit1():
     c.add(gates.CNOT(1, 3))
     c.add(gates.CNOT(2, 4))
     c.add(gates.X(0))
+    c.add(gates.CNOT(1, 0))
     c.add(gates.CNOT(4, 3))
+    c.add(gates.CNOT(1, 0))
     c.add(gates.X(0))
     c.add(gates.CNOT(1, 2))
     c.add(gates.CNOT(0, 1))
@@ -195,7 +197,9 @@ def testing_circuit1():
     c.add(gates.CNOT(1, 0))
     c.add(gates.CNOT(3, 2))
     c.add(gates.CNOT(0, 3))
-
+    c.add(gates.H(0))
+    c.add(gates.H(0))
+    c.add(gates.CNOT(0, 3))
     return c
 
 
